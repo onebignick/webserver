@@ -18,9 +18,8 @@ class Request
 	std::string path;
 	std::string version;
 	std::unordered_map<std::string, std::string> headers;
-	std::string static_dir;
 
-	Request(char* buffer, unsigned int buffer_len, std::string static_dir);
+	Request(char* buffer, unsigned int buffer_len);
 	~Request();
 
 	private:
@@ -41,6 +40,7 @@ class Server
 	long incoming_message;
 	std::string server_message;
 	std::string ip_addr;
+	std::string template_dir;
 	struct sockaddr_in address;
 	unsigned int address_len;
 	
@@ -78,7 +78,21 @@ class Response
 		{206, "Partical Content"},
 		{207, "Multi-Status"},
 		{208, "Already Reported"},
-		{226, "IM Used"}
+		{226, "IM Used"},
+		{300, "Multiple Choices"},
+		{301, "Moved Permanently"},
+		{302, "Found"},
+		{303, "See Other"},
+		{304, "Not Modified"},
+		{307, "Temporary Redirect"},
+		{308, "Permanent Redirect"},
+		{400, "Bad Request"},
+		{401, "Unauthorized"},
+		{403, "Forbidden"},
+		{404, "Not Found"},
+		{405, "Method Not Allowed"},
+		{429, "Too Many Requests"},
+		{500, "Internal Server Error"}
 	};
 	std::string version;
 	int status_code;

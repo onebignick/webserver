@@ -20,7 +20,8 @@ Server::Server(std::string ip_address, int port) :
 	incoming_socket(),
 	address(),
 	address_len(sizeof(address)),
-	server_message()
+	server_message(),
+	template_dir("templates")
 {
 	startServer();
 }
@@ -71,7 +72,7 @@ void Server::startListen()
 		std::cout << "Received request" << std::endl;
 		std::cout << buffer << std::endl;
 		
-		Request req = Request((char*)&buffer, bytes_received, "");
+		Request req = Request((char*)&buffer, bytes_received);
 		buildResponse(req);
 		sendResponse();
 		close(incoming_socket);
@@ -89,15 +90,30 @@ void Server::acceptConnection(int &incoming_socket)
 
 void Server::buildResponse(Request req)
 {
+	std::cout << req.method << " " << req.path << std::endl;
+	int status_code;
+	std::string resource_location = "./"+template_dir+req.path;
+	std::cout << resource_location << std::endl;
 	std::ostringstream body;
 	if (req.method == "GET")
 	{
-		std::ifstream infile("./index.html");
-		if (infile) 
+		std::ifstream infile(resource_location);
+		if (infile)
 		{
+			status_code = 200;
 			body << infile.rdbuf();
 			infile.close();
 		}
+		else
+		{
+			status_code = 404;
+			std::ifstream notFound("./"+template_dir+"/404.html");
+			body << notFound.rdbuf();
+			notFound.close();
+		}
+	}
+	else if (req.method == "POST")
+	{
 	}
 
 	std::string body_str = body.str();
@@ -107,7 +123,7 @@ void Server::buildResponse(Request req)
 	};
 	Response res = Response(
 		"HTTP/1.1",
-		200,
+		status_code,
 		headers,
 		body_str
 	);
@@ -136,12 +152,11 @@ void Server::closeServer()
 	exit(0);
 }
 
-Request::Request(char* buffer, unsigned int buffer_len, std::string static_dir) :
+Request::Request(char* buffer, unsigned int buffer_len) :
 	method(),
 	path(),
 	version(),
-	buffer(buffer),
-	static_dir(static_dir)
+	buffer(buffer)
 {
 	std::vector<std::string> v(5);
 	int cur = 0;
@@ -152,6 +167,7 @@ Request::Request(char* buffer, unsigned int buffer_len, std::string static_dir) 
 		else v[cur]+=buffer[i]; 
 	}
 	method = v[0];
+	if (v[1].back()=='/') v[1] += "index.html";
 	path = v[1];
 	version = v[2];
 }
