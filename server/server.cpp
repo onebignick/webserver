@@ -2,7 +2,6 @@
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
-#include <vector>
 #include <fstream>
 
 namespace
@@ -72,8 +71,8 @@ void Server::startListen()
 		std::cout << "Received request" << std::endl;
 		std::cout << buffer << std::endl;
 		
-		Request req = Request((char*)&buffer, bytes_received);
-		buildResponse(req);
+		Http::HttpRequest req = Http::HttpRequest((char*) &buffer, bytes_received);
+		BuildResponse(req);
 		sendResponse();
 		close(incoming_socket);
 	}
@@ -88,7 +87,7 @@ void Server::acceptConnection(int &incoming_socket)
 	}
 }
 
-void Server::buildResponse(Request req)
+void Server::BuildResponse(Http::HttpRequest req)
 {
 	std::cout << req.method << " " << req.path << std::endl;
 	int status_code;
@@ -151,28 +150,6 @@ void Server::closeServer()
 	close(incoming_socket);
 	exit(0);
 }
-
-Request::Request(char* buffer, unsigned int buffer_len) :
-	method(),
-	path(),
-	version(),
-	buffer(buffer)
-{
-	std::vector<std::string> v(5);
-	int cur = 0;
-	for (int i=0;i<buffer_len;i++)
-	{
-		if (buffer[i] == '\n') break;
-		else if (buffer[i] == ' ') cur++;
-		else v[cur]+=buffer[i]; 
-	}
-	method = v[0];
-	if (v[1].back()=='/') v[1] += "index.html";
-	path = v[1];
-	version = v[2];
-}
-
-Request::~Request() {}
 
 Response::Response(
 	std::string version,

@@ -3,10 +3,10 @@
 
 #include <string>
 #include <unordered_map>
-#include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
+#include "HttpRequest.hpp"
 
 namespace http 
 {
@@ -47,7 +47,7 @@ class Server
 	int startServer();
 	void closeServer();
 	void acceptConnection(int &incoming_socket);
-	void buildResponse(Request req);
+	void BuildResponse(Http::HttpRequest req);
 	void sendResponse();
 };
 
